@@ -93,6 +93,21 @@ Content/FPS/
 - Windows SDK 10.0.26100.0 (UE 5.8 최소 요구 10.0.19041.0)
 - MSVC 14.52: UE 5.8 권장 버전(14.50)보다 새로워서 엔진 헤더에서 `C4864` 경고가 나오지만 빌드에는 문제 없음. 이상한 컴파일 오류가 나면 MSVC 14.50 구성 요소 설치를 고려
 
+## Unreal MCP (AI 에이전트 연동)
+
+UE 5.8에 포함된 Epic 공식 **Unreal MCP** 플러그인(실험 기능)으로 Claude Code 등 MCP 클라이언트가 에디터를 조작할 수 있다.
+
+- 플러그인: `ModelContextProtocol`, `AllToolsets` (둘 다 Editor 전용, `Test.uproject`에서 활성화)
+- 서버 설정: `Config/DefaultEditorPerProjectUserSettings.ini`의 `[/Script/ModelContextProtocolEngine.ModelContextProtocolSettings]`
+  - `bAutoStartServer=True`, `ServerPortNumber=8000`, `ServerUrlPath=/mcp` → 에디터 실행 시 `http://localhost:8000/mcp` 자동 시작
+- 클라이언트 설정: 루트 `.mcp.json` (서버 이름 `unreal-mcp`, type `http`)
+  - 에디터 콘솔 `ModelContextProtocol.GenerateClientConfig ClaudeCode`로도 같은 파일을 생성할 수 있음 (`Cursor`, `VSCode`, `Gemini`, `Codex`, `All` 지원)
+- 사용 방법: 에디터를 먼저 켠 뒤 Claude Code 세션을 시작하고, 프로젝트 MCP 서버 `unreal-mcp` 허용
+- 노출 도구: `list_toolsets` / `describe_toolset` / `call_tool` 3개로 툴셋을 찾아 호출하는 구조
+  - 주요 툴셋: EditorAppToolset(액터·에셋 선택, 뷰포트, PIE 제어, 콘솔 변수), LogsToolset(출력 로그), ConfigSettings, AutomationTest, UMG, Niagara, PCG, GAS, GameplayTags, Plugin 등
+  - **블루프린트 그래프 편집 툴셋은 없음** → BP 노드 작업은 직접 해야 함
+- 주의: 로컬 전용이며 인증이 없으므로 포트 8000을 외부에 노출하지 말 것. 실험 기능이라 엔진 업데이트 시 동작이 바뀔 수 있음
+
 ## 빌드 방법
 
 솔루션 파일 생성 (클론 직후 또는 `Source/` 파일 추가·삭제 후):
@@ -125,7 +140,9 @@ Content/FPS/
 | 261116 | `32f6cdd` | HANDOFF 추가 (커밋 컨벤션) |
 | 261116 | `46f3b02` | C++ 모듈 `Test` 추가, `TestEditor` 빌드 확인 |
 | 261116 | `144e18f` | HANDOFF 갱신 (환경, 빌드 방법, 이력) |
-| 261116 | (이번 커밋) | 상호작용(E키) 무기 픽업 블루프린트, 테스트 맵 추가 |
+| 261116 | `6d7cc95` | 상호작용(E키) 무기 픽업 블루프린트, 테스트 맵 추가 |
+| 261116 | `e8ba619` | Lvl_FirstPerson 테스트용 액터 추가 |
+| 261116 | (이번 커밋) | Unreal MCP 플러그인 활성화, Claude Code 연결 설정 |
 
 ## 다음 할 일
 
