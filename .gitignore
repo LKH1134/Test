@@ -1,0 +1,50 @@
+# ---- Unreal Engine generated folders ----
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Plugin build outputs
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+
+# ---- IDE / project files (regenerated via "Generate Project Files") ----
+.vs/
+.vscode/
+.idea/
+*.sln
+*.slnx
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+*.xcodeproj
+*.xcworkspace
+.ignore
+compile_commands.json
+
+# ---- Compiled / build artifacts ----
+*.pdb
+*.dll
+*.exe
+*.lib
+*.ipa
+*.apk
+*.app
+*.dSYM
+
+# ---- Per-user / cooked content ----
+Content/Developers/
+Content/Collections/
+*.pak
+*.ucas
+*.utoc
+
+# ---- OS ----
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---- Claude Code local settings ----
+.claude/settings.local.json
