@@ -50,6 +50,36 @@
 - C++ 모듈: `Test` (Runtime, 의존성 `Core`, `CoreUObject`, `Engine`, `InputCore`, `EnhancedInput`, 로그 카테고리 `LogTest`)
 - 렌더링: Lumen, Virtual Shadow Maps, 레이트레이싱, Substrate, DX12 / SM6
 
+## 작업 콘텐츠 구조 (`Content/FPS/`)
+
+템플릿 원본은 가능한 한 건드리지 않고, 내 작업은 `Content/FPS/`에 두며 템플릿 에셋은 **자식 블루프린트**로 확장한다.
+
+```
+Content/FPS/
+├─ BP_FPSGameMode                     (부모: BP_ShooterGameMode, Default Pawn = BP_FPSCharacter)
+├─ Characters/BP_FPSCharacter         (부모: BP_ShooterCharacter, 상호작용 트레이스)
+├─ Input/Actions/IA_Interact          (Digital bool)
+├─ Interaction/BPI_Interactable       (Interact(Instigator: Pawn), GetInteractText → Text)
+├─ Interaction/BP_WeaponPickup_Interact (부모: BP_ShooterPickup)
+└─ Maps/Lvl_FPSTest                   (Lvl_ArenaShooter 복제, GameMode Override = BP_FPSGameMode)
+```
+
+템플릿에서 직접 수정한 에셋: `Variant_Shooter/Input/IMC_Weapons` (`IA_Interact` → `E` 매핑 추가)
+
+### 상호작용 무기 픽업 동작 방식
+
+1. `BP_FPSCharacter`: `IA_Interact`(Started) → `FirstPersonCamera` 위치에서 전방 250cm `Line Trace By Channel`(Visibility, Ignore Self)
+2. 맞은 액터가 `BPI_Interactable`을 구현하면 `Interact (Message)` 호출 (Target = Hit Actor, Instigator = Self)
+3. `BP_WeaponPickup_Interact`: `Event Interact` → Instigator에게 `BPI_Pickups`의 `Add Weapon (Message)` (Target Weapon = 부모 변수 `Weapon Class`, Target Context는 비워둠) → `Destroy Actor`
+4. 자동 줍기 방지: 픽업의 `SphereCollision`을 Custom(Query Only, 전부 Ignore, **Visibility만 Block**)으로 변경 → Overlap은 안 일어나고 트레이스에만 맞음
+
+### 템플릿 동작 메모
+
+- `BP_ShooterPickup`은 `Weapon Type`(DataTable 행)의 메시·무기 클래스를 BeginPlay에서 `Load Asset`으로 비동기 로드함 → **에디터 뷰포트에서는 큐브로 보이고 플레이 시 총 메시로 바뀌는 것이 정상**
+- 자식 BP에서 BeginPlay를 쓸 경우 반드시 `Parent: BeginPlay`를 호출할 것 (안 하면 메시/무기 로드가 안 됨)
+- 무기 입력용 `IMC_Weapons`는 `BP_ShooterPlayerController`가 등록함
+- 레벨 `Lvl_ArenaShooter` → GameMode `BP_ShooterGameMode` → Pawn `BP_ShooterCharacter` 구조
+
 ## 저장소
 
 - 원격: GitHub `origin` (`https://github.com/LKH1134/Test.git`), 기본 브랜치 `main`
@@ -94,8 +124,13 @@
 | 261116 | `0eb88d3` | 템플릿 초기 커밋, `.gitignore` / `.gitattributes`(LFS) 설정 |
 | 261116 | `32f6cdd` | HANDOFF 추가 (커밋 컨벤션) |
 | 261116 | `46f3b02` | C++ 모듈 `Test` 추가, `TestEditor` 빌드 확인 |
+| 261116 | `144e18f` | HANDOFF 갱신 (환경, 빌드 방법, 이력) |
+| 261116 | (이번 커밋) | 상호작용(E키) 무기 픽업 블루프린트, 테스트 맵 추가 |
 
 ## 다음 할 일
 
-- 에디터를 다시 열어 C++ 모듈 로드 확인
+- 상호작용 줍기 플레이 테스트 마무리: 픽업 메시가 플레이 시 총으로 바뀌는 것까지 확인됨. E키로 주웠을 때 손에 들리고 탄약 HUD가 뜨는지 최종 확인
+- 확인 후 `BP_FPSCharacter` 트레이스의 Draw Debug Type을 `None`으로 되돌리기
+- 확장 아이디어: 바라볼 때 "E: 줍기" 안내 UI(`GetInteractText` 활용), 이미 가진 무기를 주우면 탄약 보충, 무기 버리기
 - `DefaultGame.ini`의 `ProjectName`이 아직 "First Person BP Game Template"이므로 필요하면 변경
+- 에디터 재시작 후 C++ 모듈 `Test` 로드 확인
